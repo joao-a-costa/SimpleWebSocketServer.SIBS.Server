@@ -1,0 +1,139 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{EAFF0FD9-DFE1-4577-8488-38F569135B2E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SimpleWebSocketServer.SIBS.Server</RootNamespace>
+    <AssemblyName>SimpleWebSocketServer.SIBS.Server</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.ServiceProcess" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsFirewallHelper, Version=2.2.0.85, Culture=neutral, PublicKeyToken=310fd07b25df79b3, processorArchitecture=MSIL">
+      <HintPath>..\packages\WindowsFirewallHelper.2.2.0.86\lib\net40\WindowsFirewallHelper.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Enums\Enums.cs" />
+    <Compile Include="Helper\FirewallHelper.cs" />
+    <Compile Include="Models\CardData.cs" />
+    <Compile Include="Models\ConfigTerminalReqResponse.cs" />
+    <Compile Include="Models\CustomerData.cs" />
+    <Compile Include="Models\ClientConnectedResponse.cs" />
+    <Compile Include="Models\DeletePendingReversalsReqResponse.cs" />
+    <Compile Include="Models\LinqTerminalToFrontResponse.cs" />
+    <Compile Include="Models\LinqTerminalToFrontReq.cs" />
+    <Compile Include="Models\ListTerminalsResponse.cs" />
+    <Compile Include="Models\RegisterFrontResponse.cs" />
+    <Compile Include="Models\RegisterFrontReq.cs" />
+    <Compile Include="Models\PendingReversal.cs" />
+    <Compile Include="Models\DeletePendingReversalsReq.cs" />
+    <Compile Include="Models\PendingReversalsReqResponse.cs" />
+    <Compile Include="Models\PendingReversalsReq.cs" />
+    <Compile Include="Models\LoyaltyInquiryResponse.cs" />
+    <Compile Include="Models\LoyaltyInquiryReq.cs" />
+    <Compile Include="Models\MerchantData.cs" />
+    <Compile Include="Models\ConfigTerminalReq.cs" />
+    <Compile Include="Models\CustomerDataReq.cs" />
+    <Compile Include="Models\CustomerDataResponse.cs" />
+    <Compile Include="Models\SetMerchantDataReq.cs" />
+    <Compile Include="Models\SetMerchantDataReqResponse.cs" />
+    <Compile Include="Models\GetMerchantDataReqResponse.cs" />
+    <Compile Include="Models\GetMerchantDataReq.cs" />
+    <Compile Include="Models\ErrorNotification.cs" />
+    <Compile Include="Models\EventNotification.cs" />
+    <Compile Include="Models\AmountData.cs" />
+    <Compile Include="Models\HeartbeatNotification.cs" />
+    <Compile Include="Models\PairingNotification.cs" />
+    <Compile Include="Models\CommunicationsReq.cs" />
+    <Compile Include="Models\CommunicationsReqResponse.cs" />
+    <Compile Include="Models\ReconciliationReqResponse.cs" />
+    <Compile Include="Models\ReconciliationReq.cs" />
+    <Compile Include="Models\PairingReqResponse.cs" />
+    <Compile Include="Models\PaymentData.cs" />
+    <Compile Include="Models\ProcessPaymentReqResponse.cs" />
+    <Compile Include="Models\ReceiptNotification.cs" />
+    <Compile Include="Models\ReceiptTextsData.cs" />
+    <Compile Include="Models\RefundReq.cs" />
+    <Compile Include="Models\RefundReqResponse.cs" />
+    <Compile Include="Models\SetAuthCredentialsReqResponse.cs" />
+    <Compile Include="Models\SetAuthCredentialsReq.cs" />
+    <Compile Include="Models\ProcessPaymentReq.cs" />
+    <Compile Include="Models\PairingReq.cs" />
+    <Compile Include="Models\ListTerminalsReq.cs" />
+    <Compile Include="Models\TerminalStatusReq.cs" />
+    <Compile Include="Models\NewTerminalConnectedReq.cs" />
+    <Compile Include="Models\TransactionResponse.cs" />
+    <Compile Include="Models\TerminalStatusReqResponse.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Utilities\UtilitiesSibs.cs" />
+    <Compile Include="WebSocketServerSibs.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Resources\credentials.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="MpComExportsLib">
+      <Guid>{8C389764-F036-48F2-9AE2-88C260DCF43B}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SimpleWebSocketServer\SimpleWebSocketServer\SimpleWebSocketServer.Lib.csproj">
+      <Project>{405d75fe-75b0-4d2e-b8d4-0d211a45b743}</Project>
+      <Name>SimpleWebSocketServer.Lib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
