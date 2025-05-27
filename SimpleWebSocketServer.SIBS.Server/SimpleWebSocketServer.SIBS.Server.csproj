@@ -95,6 +95,7 @@
     <Compile Include="Models\ProcessPaymentReq.cs" />
     <Compile Include="Models\PairingReq.cs" />
     <Compile Include="Models\ListTerminalsReq.cs" />
+    <Compile Include="Models\TerminalDisconnected.cs" />
     <Compile Include="Models\TerminalStatusReq.cs" />
     <Compile Include="Models\NewTerminalConnectedReq.cs" />
     <Compile Include="Models\TransactionResponse.cs" />
