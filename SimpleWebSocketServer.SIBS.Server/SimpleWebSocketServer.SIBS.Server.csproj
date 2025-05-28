@@ -34,8 +34,20 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="NLog, Version=5.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+      <HintPath>..\packages\NLog.5.4.0\lib\net46\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleWebSocketServer.Lib, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleWebSocketServer.Lib.1.0.14\lib\netstandard2.0\SimpleWebSocketServer.Lib.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleWebSocketServer.SIBS.Lib, Version=1.0.26.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleWebSocketServer.SIBS.Lib.1.0.26\lib\net472\SimpleWebSocketServer.SIBS.Lib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
     <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -110,6 +122,9 @@
     <Compile Include="WebSocketServerSibs.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="nlog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Resources\credentials.json" />
   </ItemGroup>
@@ -129,12 +144,6 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\SimpleWebSocketServer\SimpleWebSocketServer\SimpleWebSocketServer.Lib.csproj">
-      <Project>{405d75fe-75b0-4d2e-b8d4-0d211a45b743}</Project>
-      <Name>SimpleWebSocketServer.Lib</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
