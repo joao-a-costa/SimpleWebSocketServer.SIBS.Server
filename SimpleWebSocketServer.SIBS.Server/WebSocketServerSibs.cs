@@ -53,6 +53,10 @@ namespace SimpleWebSocketServer.SIBS.Server
         private readonly ConcurrentDictionary<Guid, Guid> _fronts = new ConcurrentDictionary<Guid, Guid>();
         private readonly ConcurrentDictionary<Guid, Guid> _terminalToFrontMap = new ConcurrentDictionary<Guid, Guid>();
 
+        public ConcurrentDictionary<Guid, int> Terminals => _terminals;
+        public ConcurrentDictionary<Guid, Guid> Fronts => _fronts;
+        public ConcurrentDictionary<Guid, Guid> TerminalToFrontMap => _terminalToFrontMap;
+
         #endregion
 
         #region "Public methods"
@@ -121,7 +125,7 @@ namespace SimpleWebSocketServer.SIBS.Server
             if (serverTask != null && !serverTask.IsCompleted)
             {
                 server.Stop().Wait();
-                serverTask.Wait();  // Optionally wait for the task to complete
+                //serverTask.Wait();  // Optionally wait for the task to complete
             }
 
             // Dispose of the cancellation token source
