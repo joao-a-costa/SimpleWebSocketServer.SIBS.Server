@@ -10,12 +10,13 @@ set servicePath=%~dp0
 
 rem Navigate to the Service directory
 cd %servicePath%
+cd Service
 
 rem Navigate to the .NET Framework directory
 cd C:\Windows\Microsoft.NET\Framework\v4.0.30319
 
 rem Install the service
-InstallUtil.exe "%servicePath%\%serviceNameExe%.exe"
+InstallUtil.exe "%servicePath%\Service\%serviceNameExe%.exe"
 
 set finalServiceName=%serviceName%
 

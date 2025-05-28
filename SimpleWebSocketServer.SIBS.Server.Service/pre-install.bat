@@ -31,7 +31,7 @@ set "backupFolder=%servicePath%backup%day%%month%%year%"
 mkdir "%backupFolder%"
 
 rem Copy the contents of the source folder to the new backup folder
-xcopy "%servicePath%" "%backupFolder%" /E /I /Y
+xcopy "%servicePath%Service\" "%backupFolder%" /E /I /Y
 
 rem Delete all content from folder except ver.ini
 set "target_dir=%servicePath%"
