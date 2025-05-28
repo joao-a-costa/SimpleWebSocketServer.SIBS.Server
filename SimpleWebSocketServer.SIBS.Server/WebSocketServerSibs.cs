@@ -286,9 +286,17 @@ namespace SimpleWebSocketServer.SIBS.Server
                 _fronts.TryRemove(e.clientId, out _);
 
             // Unlink terminal from front
-            var terminal = _terminalToFrontMap.FirstOrDefault(kvp => kvp.Value == e.clientId);
+            var terminal = _terminalToFrontMap.FirstOrDefault(kvp => kvp.Key == e.clientId);
             if (!terminal.Equals(default(KeyValuePair<Guid, Guid>)))
+            {
                 _terminalToFrontMap.TryRemove(terminal.Key, out _);
+                SendMessageToClients(new List<(Guid clientId, string message)> { (terminal.Value, JsonConvert.SerializeObject(new TerminalDisconnected())) }).Wait();
+            }
+
+            // Unlink front from terminal
+            var front = _terminalToFrontMap.FirstOrDefault(kvp => kvp.Value == e.clientId);
+            if (!front.Equals(default(KeyValuePair<Guid, Guid>)))
+                _terminalToFrontMap.TryRemove(front.Key, out _);
 
             ClientDisconnected?.Invoke(this, new EventArgs());
         }

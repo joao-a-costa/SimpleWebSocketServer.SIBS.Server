@@ -48,7 +48,8 @@ namespace SimpleWebSocketServer.SIBS.Server.Enums
             LINQ_TERMINAL_TO_FRONT_REQUEST,
             LINQ_TERMINAL_TO_FRONT_RESPONSE,
             CLIENT_CONNECTED_RESPONSE,
-            NEW_TERMINAL_CONNECTED_REQUEST
+            NEW_TERMINAL_CONNECTED_REQUEST,
+            TERMINAL_DISCONNECTED
         }
 
         public enum AuthorizationType
