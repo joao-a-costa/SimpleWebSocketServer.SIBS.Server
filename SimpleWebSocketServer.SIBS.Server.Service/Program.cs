@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Net.WebSockets;
+using System.ServiceProcess;
 
-namespace SimpleWebSocketServer.SIBS.Server.Console
+namespace SimpleWebSocketServer.SIBS.Server.Service
 {
     internal static class Program
     {
@@ -17,7 +16,7 @@ namespace SimpleWebSocketServer.SIBS.Server.Console
 
         #region "Members"
 
-        private static WebSocketServerSibs server;
+        private static SocketService server;
 
         #endregion
 
@@ -28,11 +27,27 @@ namespace SimpleWebSocketServer.SIBS.Server.Console
         /// <returns>The task object representing the asynchronous operation.</returns>
         static void Main()
         {
+#if DEBUG
+
+            RunSimulation();
+
+#else
+            ServiceBase[] ServicesToRun;
+            ServicesToRun = new ServiceBase[]
+            {
+                new SocketService()
+            };
+            ServiceBase.Run(ServicesToRun);
+#endif
+        }
+
+        private static void RunSimulation()
+        {
             // Define the WebSocket server prefix
             string prefix = _WebSocketServerPrefix;
 
             // Create an instance of WebSocketServer
-            server = new WebSocketServerSibs();
+            server = new SocketService();
 
             try
             {
@@ -75,8 +90,6 @@ namespace SimpleWebSocketServer.SIBS.Server.Console
             System.Console.WriteLine(_MessagePressAnyKeyToExit);
             System.Console.ReadKey();
         }
-
-
 
         #region "Private Methods"
 
@@ -121,7 +134,6 @@ namespace SimpleWebSocketServer.SIBS.Server.Console
 
             System.Console.WriteLine();
         }
-
 
         #endregion
     }

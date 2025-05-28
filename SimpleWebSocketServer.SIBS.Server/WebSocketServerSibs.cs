@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NLog;
 using SimpleWebSocketServer.SIBS.Server.Helper;
 using SimpleWebSocketServer.SIBS.Server.Models;
 
@@ -28,6 +29,7 @@ namespace SimpleWebSocketServer.SIBS.Server
         private WebSocketServer server;
         private CancellationTokenSource cancellationTokenSource;
         private Task serverTask;
+        private readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -53,6 +55,10 @@ namespace SimpleWebSocketServer.SIBS.Server
         private readonly ConcurrentDictionary<Guid, Guid> _fronts = new ConcurrentDictionary<Guid, Guid>();
         private readonly ConcurrentDictionary<Guid, Guid> _terminalToFrontMap = new ConcurrentDictionary<Guid, Guid>();
 
+        public ConcurrentDictionary<Guid, int> Terminals => _terminals;
+        public ConcurrentDictionary<Guid, Guid> Fronts => _fronts;
+        public ConcurrentDictionary<Guid, Guid> TerminalToFrontMap => _terminalToFrontMap;
+
         #endregion
 
         #region "Public methods"
@@ -64,7 +70,7 @@ namespace SimpleWebSocketServer.SIBS.Server
         public void Start(string prefix)
         {
             // Create an instance of WebSocketServer
-            server = new WebSocketServer(prefix);
+            server = new WebSocketServer(_logger, prefix);
 
             // Initialize the cancellation token source
             cancellationTokenSource = new CancellationTokenSource();
@@ -121,7 +127,7 @@ namespace SimpleWebSocketServer.SIBS.Server
             if (serverTask != null && !serverTask.IsCompleted)
             {
                 server.Stop().Wait();
-                serverTask.Wait();  // Optionally wait for the task to complete
+                //serverTask.Wait();  // Optionally wait for the task to complete
             }
 
             // Dispose of the cancellation token source
@@ -169,26 +175,26 @@ namespace SimpleWebSocketServer.SIBS.Server
             }
         }
 
-        public static async Task<bool> InstallCertificate(string prefix, string certificatePath, string certificatePassword,
-            string appId, string certificateThumbprint)
-        {
-            var res = false;
+        //public static async Task<bool> InstallCertificate(string prefix, string certificatePath, string certificatePassword,
+        //    string appId, string certificateThumbprint)
+        //{
+        //    var res = false;
 
-            try
-            {
-                WebSocketServer.InstallCertificateMessage += WebSocketServer_InstallCertificateMessage;
-                res = await WebSocketServer.InstallCertificate(prefix, certificatePath, certificatePassword, appId, certificateThumbprint);
-            }
-            catch(Exception ex)
-            {
-                Log($"{_MessageErrorOccurred}: {ex.Message}");
-            }
-            finally
-            {
-                WebSocketServer.InstallCertificateMessage -= WebSocketServer_InstallCertificateMessage;
-            }
-            return res;
-        }
+        //    try
+        //    {
+        //        WebSocketServer.InstallCertificateMessage += WebSocketServer_InstallCertificateMessage;
+        //        res = await WebSocketServer.InstallCertificate(prefix, certificatePath, certificatePassword, appId, certificateThumbprint);
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        Log($"{_MessageErrorOccurred}: {ex.Message}");
+        //    }
+        //    finally
+        //    {
+        //        WebSocketServer.InstallCertificateMessage -= WebSocketServer_InstallCertificateMessage;
+        //    }
+        //    return res;
+        //}
 
         public static Tuple<bool, string> AddFirewallRule(string applicationName, string prefix)
         {
@@ -207,48 +213,6 @@ namespace SimpleWebSocketServer.SIBS.Server
             return Tuple.Create(res, resMessage);
         }
 
-        ////// Add a mapping
-        ////private void LinkTerminalToFront(Guid terminalId, Guid frontId)
-        ////{
-        ////    _terminalToFrontMap[terminalId] = frontId;
-        ////}
-
-        ////// Remove a mapping
-        ////private void UnlinkTerminalFromFront(Guid terminalId)
-        ////{
-        ////    //if (_terminalToFrontMap.TryRemove(terminalId, out var frontId))
-        ////    //{
-        ////    //    //_frontToTerminalMap.TryRemove(frontId, out _);
-        ////    //}
-        ////}
-
-        //// Get linked front for a terminal
-        ////public Guid? GetFrontByTerminal(Guid terminalId)
-        ////{
-        ////    //if (_terminalToFrontMap.TryGetValue(terminalId, out var frontId))
-        ////    //{
-        ////    //    return frontId;
-        ////    //}
-        ////    return null;
-        ////}
-
-        //// Get linked terminal for a front
-        //private Guid? GetTerminalByFront(Guid frontId)
-        //{
-        //    Guid? terminalId = null;
-
-        //    var terminal = _terminalToFrontMap.FirstOrDefault(kvp => kvp.Value == frontId);
-
-        //    if (terminal.Equals(default(KeyValuePair<Guid, Guid>)))
-        //    {
-        //        terminalId = null;
-        //    }
-        //    else
-        //        terminalId = terminal.Key;
-
-        //    return terminalId;
-        //}
-
         #endregion
 
         #region "Private methods"
@@ -257,9 +221,9 @@ namespace SimpleWebSocketServer.SIBS.Server
         /// Method to log messages to the console
         /// </summary>
         /// <param name="message"></param>
-        public static void Log(string message)
+        public void Log(string message)
         {
-            Console.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]{message}");
+            _logger.Info(message);
         }
 
         /// <summary>

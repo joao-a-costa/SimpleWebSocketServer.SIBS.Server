@@ -5,9 +5,7 @@ VisualStudioVersion = 17.9.34902.65
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleWebSocketServer.SIBS.Server", "SimpleWebSocketServer.SIBS.Server\SimpleWebSocketServer.SIBS.Server.csproj", "{EAFF0FD9-DFE1-4577-8488-38F569135B2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleWebSocketServer.SIBS.Server.Console", "SimpleWebSocketServer.SIBS.Server.Console\SimpleWebSocketServer.SIBS.Server.Console.csproj", "{AFF1CF6D-2725-421F-9BA6-7F785702A4F8}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleWebSocketServer.Lib", "..\SimpleWebSocketServer\SimpleWebSocketServer\SimpleWebSocketServer.Lib.csproj", "{405D75FE-75B0-4D2E-B8D4-0D211A45B743}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleWebSocketServer.SIBS.Server.Service", "SimpleWebSocketServer.SIBS.Server.Service\SimpleWebSocketServer.SIBS.Server.Service.csproj", "{60CCCAD3-327B-4C87-B0AA-320EF58021EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +17,10 @@ Global
 		{EAFF0FD9-DFE1-4577-8488-38F569135B2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAFF0FD9-DFE1-4577-8488-38F569135B2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAFF0FD9-DFE1-4577-8488-38F569135B2E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AFF1CF6D-2725-421F-9BA6-7F785702A4F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AFF1CF6D-2725-421F-9BA6-7F785702A4F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AFF1CF6D-2725-421F-9BA6-7F785702A4F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AFF1CF6D-2725-421F-9BA6-7F785702A4F8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{405D75FE-75B0-4D2E-B8D4-0D211A45B743}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{405D75FE-75B0-4D2E-B8D4-0D211A45B743}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{405D75FE-75B0-4D2E-B8D4-0D211A45B743}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{405D75FE-75B0-4D2E-B8D4-0D211A45B743}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60CCCAD3-327B-4C87-B0AA-320EF58021EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60CCCAD3-327B-4C87-B0AA-320EF58021EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60CCCAD3-327B-4C87-B0AA-320EF58021EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60CCCAD3-327B-4C87-B0AA-320EF58021EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

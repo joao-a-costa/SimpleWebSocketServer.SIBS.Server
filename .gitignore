@@ -10,3 +10,6 @@
 /SimpleWebSocketServer.SIBS.Server/.vs
 /SimpleWebSocketServer.SIBS.Server/SimpleWebSocketServer.SIBS.Server.csproj.user
 /SimpleWebSocketServer.SIBS.Server/SimpleWebSocketServer.SIBS.Server.nuspec
+/SimpleWebSocketServer.SIBS.Server.Service/bin
+/SimpleWebSocketServer.SIBS.Server.Service/obj
+/SimpleWebSocketServer.SIBS.Server.Service/.vs
