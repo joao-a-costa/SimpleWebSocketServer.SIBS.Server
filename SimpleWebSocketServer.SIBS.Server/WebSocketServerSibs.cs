@@ -20,6 +20,7 @@ namespace SimpleWebSocketServer.SIBS.Server
         private const string _MessageErrorOccurred = "Error occurred";
         private const string _MessageErrorDeserializingMessage = "Error deserializing message";
         private const string _MessageErrorNotConnectedToATerminal = "Not connected to a terminal";
+        private const string _MessageStartingServer = "Starting server";
 
         #region "Fields"
 
@@ -76,6 +77,9 @@ namespace SimpleWebSocketServer.SIBS.Server
             cancellationTokenSource = new CancellationTokenSource();
             CancellationToken cancellationToken = cancellationTokenSource.Token;
 
+            // This is expected when the task is canceled
+            Log($"{_MessageStartingServer}: {prefix}");
+
             // Start the WebSocket server asynchronously
             serverTask = Task.Run(() =>
             {
@@ -97,9 +101,10 @@ namespace SimpleWebSocketServer.SIBS.Server
                         Task.Delay(1000, cancellationToken).Wait(cancellationToken); // Poll every 1 second
                     }
                 }
-                catch (OperationCanceledException)
+                catch (OperationCanceledException ex)
                 {
                     // This is expected when the task is canceled
+                    Log($"{_MessageErrorOccurred}: {ex.Message}");
                 }
                 catch (HttpListenerException ex)
                 {
