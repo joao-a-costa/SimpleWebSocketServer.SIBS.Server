@@ -87,17 +87,8 @@ if "%certInstalled%"=="true" (
 ) else (
     echo [INFO] Certificate not found. Proceeding with import...
 
-    rem Securely get password from user and write to certpass.tmp using PowerShell
-    powershell -Command "$pass = Read-Host -AsSecureString 'Enter certificate password'; $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($pass); $plain = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr); Set-Content -Path 'certpass.tmp' -Value $plain"
-
-    rem Read password into batch variable
-    set /p certPassword=<certpass.tmp
-
-    rem Delete temp file
-    del certpass.tmp >nul 2>&1
-
     echo Importing certificate...
-    certutil -f -p "%certPassword%" -importpfx "%certFile%"
+    certutil -f -importpfx "%certFile%"
     if not "%ERRORLEVEL%"=="0" (
         echo [ERROR] Import failed. Certutil returned error code %ERRORLEVEL%.
         pause
