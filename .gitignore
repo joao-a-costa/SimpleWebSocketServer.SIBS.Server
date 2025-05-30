@@ -13,3 +13,4 @@
 /SimpleWebSocketServer.SIBS.Server.Service/bin
 /SimpleWebSocketServer.SIBS.Server.Service/obj
 /SimpleWebSocketServer.SIBS.Server.Service/.vs
+/SimpleWebSocketServer.SIBS.Server.Service/certificate.p12

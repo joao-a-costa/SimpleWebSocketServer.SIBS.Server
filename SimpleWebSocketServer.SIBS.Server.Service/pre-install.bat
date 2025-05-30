@@ -33,10 +33,10 @@ mkdir "%backupFolder%"
 rem Copy the contents of the source folder to the new backup folder
 xcopy "%servicePath%Service\" "%backupFolder%" /E /I /Y
 
-rem Delete all content from folder except ver.ini
-set "target_dir=%servicePath%"
+rem Delete all content from folder except *.ini
+set "target_dir=%servicePath%Service"
 for /r "%target_dir%" %%f in (*) do (
-    if /i not "%%~nxf"=="%serviceName%.ini" del "%%f"
+    if /i not "%%~xf"==".ini" del "%%f"
 )
 
 pause
