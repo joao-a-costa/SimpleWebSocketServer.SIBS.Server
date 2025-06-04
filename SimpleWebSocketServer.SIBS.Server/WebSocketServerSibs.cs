@@ -321,8 +321,11 @@ namespace SimpleWebSocketServer.SIBS.Server
                 {
                     switch (resultTerminal.Type)
                     {
+                        case Enums.Enums.RequestType.STATUS_REQUEST:
+                            SendMessageToTerminal(e).Wait();
+                            break;
                         case Enums.Enums.RequestType.STATUS_RESPONSE:
-                            OnTerminalStatusReqResponseReceived(resultTerminal);
+                            SendMessageToFront((e.clientId, e.message)).Wait();
                             break;
                         case Enums.Enums.RequestType.SET_AUTH_CREDENTIAL_RESPONSE:
                             SendMessageToFront((e.clientId, e.message)).Wait();
