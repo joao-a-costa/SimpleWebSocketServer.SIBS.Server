@@ -155,6 +155,7 @@ set "serviceNameExe=SimpleWebSocketServer.SIBS.Server.Service"
 cd /d "%servicePath%Service"
 cd /d "C:\Windows\Microsoft.NET\Framework\v4.0.30319"
 InstallUtil.exe "%servicePath%Service\%serviceNameExe%.exe"
+sc config  "%serviceName%" start= auto
 sc failure "%serviceName%" reset= 30 actions= restart/1000/restart/2000/restart/5000
 net start "%serviceName%"
 
