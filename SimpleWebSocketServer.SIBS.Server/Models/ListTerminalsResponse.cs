@@ -16,6 +16,6 @@ namespace SimpleWebSocketServer.SIBS.Server.Models
         public RequestType Type { get; set; } = RequestType.LIST_TERMINALS_RESPONSE;
 
         [JsonProperty("terminals")]
-        public List<int> Terminals { get; set; } = new List<int>();
+        public List<long> Terminals { get; set; } = new List<long>();
     }
 }

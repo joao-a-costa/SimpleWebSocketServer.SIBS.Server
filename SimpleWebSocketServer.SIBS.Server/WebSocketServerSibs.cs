@@ -52,11 +52,11 @@ namespace SimpleWebSocketServer.SIBS.Server
 
         public bool IsStarted => server.IsStarted;
 
-        private readonly ConcurrentDictionary<Guid, int> _terminals = new ConcurrentDictionary<Guid, int>();
+        private readonly ConcurrentDictionary<Guid, long> _terminals = new ConcurrentDictionary<Guid, long>();
         private readonly ConcurrentDictionary<Guid, Guid> _fronts = new ConcurrentDictionary<Guid, Guid>();
         private readonly ConcurrentDictionary<Guid, Guid> _terminalToFrontMap = new ConcurrentDictionary<Guid, Guid>();
 
-        public ConcurrentDictionary<Guid, int> Terminals => _terminals;
+        public ConcurrentDictionary<Guid, long> Terminals => _terminals;
         public ConcurrentDictionary<Guid, Guid> Fronts => _fronts;
         public ConcurrentDictionary<Guid, Guid> TerminalToFrontMap => _terminalToFrontMap;
 
@@ -327,6 +327,9 @@ namespace SimpleWebSocketServer.SIBS.Server
                         case Enums.Enums.RequestType.STATUS_RESPONSE:
                             SendMessageToFront((e.clientId, e.message)).Wait();
                             break;
+                        case Enums.Enums.RequestType.SET_AUTH_CREDENTIAL_REQUEST:
+                            SendMessageToTerminal(e).Wait();
+                            break;
                         case Enums.Enums.RequestType.SET_AUTH_CREDENTIAL_RESPONSE:
                             SendMessageToFront((e.clientId, e.message)).Wait();
                             break;
@@ -355,34 +358,7 @@ namespace SimpleWebSocketServer.SIBS.Server
                             SendMessageToFront((e.clientId, e.message)).Wait();
                             break;
                         case Enums.Enums.RequestType.HEARTBEAT_NOTIFICATION:
-                            // Register terminal if not already
-                            if (resultTerminal.TerminalId > 0 && !_terminals.ContainsKey(e.clientId))
-                            {
-                                Log($"TerminalID: {resultTerminal.TerminalId} associated to Client: {e.clientId}");
-                                _terminals[e.clientId] = resultTerminal.TerminalId;
-
-                                // Broadcast message informing there's a new terminal
-                                var rewTerminalConnectedReq = new NewTerminalConnectedReq
-                                {
-                                    TerminalId = resultTerminal.TerminalId,
-                                    ClientId = e.clientId
-                                };
-
-                                string messageJson = JsonConvert.SerializeObject(rewTerminalConnectedReq);
-
-                                // Create a list of tasks to send messages asynchronously to all clients
-                                var sendTasks = _fronts.Keys.Select(clientId =>
-                                    SendMessageToClients(new List<(Guid clientId, string message)>
-                                    {
-                                        (clientId, messageJson)
-                                    })
-                                );
-
-                                // Await all tasks in parallel
-                                Task.WhenAll(sendTasks).Wait();
-
-                            }
-                            SendMessageToFront((e.clientId, e.message)).Wait();
+                            RegisterTerminal(e, resultTerminal);
                             break;
                         case Enums.Enums.RequestType.RECEIPT_NOTIFICATION:
                             SendMessageToFront((e.clientId, e.message)).Wait();
@@ -478,6 +454,47 @@ namespace SimpleWebSocketServer.SIBS.Server
 
         #region "Front operations"
 
+        private void RegisterTerminal((Guid clientId, string message) e, TerminalStatusReqResponse resultTerminal)
+        {
+            // Register terminal if not already
+            if (!_terminals.Any())
+            {
+                Log($"TerminalID: {resultTerminal.TerminalId} associated to Client: {e.clientId}");
+                _terminals[e.clientId] = resultTerminal.TerminalId;
+
+
+                if (_fronts.Any())
+                    LinkTerminalToFront((_fronts.First().Key,
+                        JsonConvert.SerializeObject(new LinqTerminalToFrontReq
+                        {
+                            Front = _fronts.First().Key,
+                            Terminal = resultTerminal.TerminalId,
+                        }))).Wait();
+
+                //// Broadcast message informing there's a new terminal
+                //var rewTerminalConnectedReq = new NewTerminalConnectedReq
+                //{
+                //    TerminalId = resultTerminal.TerminalId,
+                //    ClientId = e.clientId
+                //};
+
+                //string messageJson = JsonConvert.SerializeObject(rewTerminalConnectedReq);
+
+                //// Create a list of tasks to send messages asynchronously to all clients
+                //var sendTasks = _fronts.Keys.Select(clientId =>
+                //    SendMessageToClients(new List<(Guid clientId, string message)>
+                //    {
+                //                        (clientId, messageJson)
+                //    })
+                //);
+
+                //// Await all tasks in parallel
+                //Task.WhenAll(sendTasks).Wait();
+
+            }
+            //SendMessageToFront((e.clientId, e.message)).Wait();
+        }
+
         private async Task RegisterFront((Guid clientId, string message) e)
         {
             var messageToSend = string.Empty;
@@ -497,6 +514,14 @@ namespace SimpleWebSocketServer.SIBS.Server
             response.Message = messageToSend;
 
             await SendMessageToClients(new List<(Guid clientId, string message)>{(e.clientId, JsonConvert.SerializeObject(response))});
+
+            if (_terminals.Any())
+                await LinkTerminalToFront((e.clientId,
+                    JsonConvert.SerializeObject(new LinqTerminalToFrontReq
+                    {
+                        Front = registerFrontReq.Front,
+                        Terminal = _terminals.First().Value,
+                    })));
         }
 
         private async Task ListTerminals((Guid clientId, string message) e)

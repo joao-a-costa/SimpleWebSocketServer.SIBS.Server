@@ -12,7 +12,7 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
         private WebSocketServerSibs _server;
 
         public bool IsStarted => _server.IsStarted;
-        public ConcurrentDictionary<Guid, int> Terminals => _server.Terminals;
+        public ConcurrentDictionary<Guid, long> Terminals => _server.Terminals;
         public ConcurrentDictionary<Guid, Guid> Fronts => _server.Fronts;
         public ConcurrentDictionary<Guid, Guid> TerminalToFrontMap => _server.TerminalToFrontMap;
 

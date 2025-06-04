@@ -15,7 +15,7 @@ namespace SimpleWebSocketServer.SIBS.Server.Models
         public RequestType Type { get; set; } = RequestType.LINQ_TERMINAL_TO_FRONT_REQUEST;
 
         [JsonProperty("terminal")]
-        public int Terminal { get; set; }
+        public long Terminal { get; set; }
 
         [JsonProperty("front")]
         public System.Guid Front { get; set; }
