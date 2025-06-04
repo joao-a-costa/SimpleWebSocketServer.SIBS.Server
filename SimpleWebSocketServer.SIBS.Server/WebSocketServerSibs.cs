@@ -503,7 +503,9 @@ namespace SimpleWebSocketServer.SIBS.Server
         {
             var response = new ListTerminalsResponse();
 
-            response.Terminals.AddRange(_terminals.Values);
+            var listOfAvailableTerminals = _terminals.Where(w => !_terminalToFrontMap.ContainsKey(w.Key)).Select(s => s.Value);
+
+            response.Terminals.AddRange(listOfAvailableTerminals);
 
             await SendMessageToClients(new List<(Guid clientId, string message)> { (e.clientId, JsonConvert.SerializeObject(response)) });
         }
