@@ -103,39 +103,38 @@ for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Ha
 if "%certInstalled%"=="true" (
     echo [INFO] Certificate already installed. Skipping import.
 ) else (
-    echo [INFO] Certificate not found. Proceeding with import...
+    if exist "%certFile%" (
+        echo [INFO] Certificate not found. Proceeding with import...
 
-    echo Importing certificate...
-    certutil -f -importpfx "%certFile%"
-    if not "%ERRORLEVEL%"=="0" (
-        echo [ERROR] Import failed. Certutil returned error code %ERRORLEVEL%.
-        
-echo Adding firewall rules...
-
-netsh advfirewall firewall add rule name="Allow Port 10005" dir=in action=allow protocol=TCP localport=10005
-netsh advfirewall firewall add rule name="Allow Port 10006" dir=in action=allow protocol=TCP localport=10006
-
-echo Firewall rules added.
-
-pause
-        exit /b %ERRORLEVEL%
-    )
-
-    for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
-        set "line=%%h"
-        setlocal enabledelayedexpansion
-        set "line=!line: =!"
-        if /i "!line!"=="%expectedThumbprint%" (
-            endlocal
-            set "certHash=%expectedThumbprint%"
-            goto hashFound
+        echo Importing certificate...
+        certutil -f -importpfx "%certFile%"
+        if not "%ERRORLEVEL%"=="0" (
+            echo [ERROR] Import failed. Certutil returned error code %ERRORLEVEL%.
+            pause
+            exit /b %ERRORLEVEL%
         )
-        endlocal
-    )
 
-    echo [ERROR] Imported certificate not found by thumbprint.
-    pause
-    exit /b 1
+        for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
+            set "line=%%h"
+            setlocal enabledelayedexpansion
+            set "line=!line: =!"
+            if /i "!line!"=="%expectedThumbprint%" (
+                endlocal
+                set "certHash=%expectedThumbprint%"
+                goto hashFound
+            )
+            endlocal
+        )
+
+        echo [ERROR] Imported certificate not found by thumbprint.
+        pause
+        exit /b 1
+    ) else (
+        echo [ERROR] Certificate file not found at: %certFile%
+        echo Please ensure the certificate exists and try again.
+        pause
+        exit /b 1
+    )
 )
 
 :hashFound
