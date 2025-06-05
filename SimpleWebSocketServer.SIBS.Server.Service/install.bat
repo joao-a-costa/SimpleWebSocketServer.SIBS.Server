@@ -88,35 +88,35 @@ if not exist "%certFile%" (
     set "OPENSSL_CMD=openssl"
     where openssl >nul 2>&1
     if errorlevel 1 (
-        set "currentDrive=%CD:~0,2%"
-        set "searchDir=%currentDrive%\Program Files\OpenSSL-Win64"
-        echo [INFO] OpenSSL not found in PATH. Trying fallback: %searchDir%
-        if exist "%searchDir%" (
-            for /f "delims=" %%F in ('dir "%searchDir%" /s /b ^| findstr /i "bin\\openssl.exe"') do (
+        set "searchDir=c:\Program Files\OpenSSL-Win64"
+	echo [DEBUG] OpenSSL fallback folder: !searchDir!
+        echo [INFO] OpenSSL not found in PATH. Trying fallback: !searchDir!
+        if exist "!searchDir!" (
+            for /f "delims=" %%F in ('dir "!searchDir!" /s /b ^| findstr /i "bin\\openssl.exe"') do (
                 set "OPENSSL_CMD=%%F"
                 goto openssl_ready
             )
         )
 
         echo [INFO] OpenSSL not found. Attempting to run installer...
-        if exist "%~dp0Win64OpenSSL_Light-3_5_0.exe" (
+        if exist "%~dp0Service\Win64OpenSSL_Light-3_5_0.exe" (
             echo Running installer: Win64OpenSSL_Light-3_5_0.exe
-            start /wait "" "%~dp0Win64OpenSSL_Light-3_5_0.exe"
+            start /wait "" "%~dp0Service\Win64OpenSSL_Light-3_5_0.exe"
         ) else (
-            echo [ERROR] Installer not found: %~dp0Win64OpenSSL_Light-3_5_0.exe
+            echo [ERROR] Installer not found: %~dp0Service\Win64OpenSSL_Light-3_5_0.exe
             pause
             exit /b 1
         )
 
         where openssl >nul 2>&1
         if errorlevel 1 (
-            if exist "%searchDir%" (
-                for /f "delims=" %%F in ('dir "%searchDir%" /s /b ^| findstr /i "bin\\openssl.exe"') do (
+            if exist "!searchDir!" (
+                for /f "delims=" %%F in ('dir "!searchDir!" /s /b ^| findstr /i "bin\\openssl.exe"') do (
                     set "OPENSSL_CMD=%%F"
                     goto openssl_ready
                 )
             )
-            echo [ERROR] OpenSSL still not found after installation.
+            echo [ERROR] OpenSSL still not found after installation "!searchDir!"
             pause
             exit /b 1
         )
