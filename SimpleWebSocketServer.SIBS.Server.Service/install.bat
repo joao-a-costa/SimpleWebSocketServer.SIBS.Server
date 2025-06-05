@@ -11,6 +11,7 @@ set "configFile=%servicePath%Service\SimpleWebSocketServer.SIBS.Server.Service.i
 set "certFile=%servicePath%Service\smartcashlessserver.p12"
 set "appId={01234567-89AB-CDEF-0123-456789ABCDEF}"
 set "ServiceName="
+set "certHash="
 
 rem ========================
 rem CHOOSE PORT IF NOT CONFIGURED
@@ -21,9 +22,11 @@ if exist "%configFile%" (
 
     for /f "tokens=2 delims==" %%A in ('findstr /b /c:"Port=" "%configFile%"') do set "port=%%A"
     for /f "tokens=2 delims==" %%A in ('findstr /b /c:"ServiceName=" "%configFile%"') do set "ServiceName=%%A"
+    for /f "tokens=2 delims==" %%A in ('findstr /b /c:"Thumbprint=" "%configFile%"') do set "certHash=%%A"
 
     echo Port loaded from SimpleWebSocketServer.SIBS.Server.Service.ini: !port!
     echo Service name loaded from SimpleWebSocketServer.SIBS.Server.Service.ini: !ServiceName!
+    echo Thumbprint loaded from SimpleWebSocketServer.SIBS.Server.Service.ini: !certHash!
 ) else (
 :askPort
     set /p "userPort=Enter port number (default is %defaultPort%): "
@@ -67,11 +70,11 @@ if exist "%configFile%" (
     ) else (
         set "ServiceName=!userServiceName!"
     )
-
-    echo [Settings]> "%configFile%"
-    echo Port=!port!>> "%configFile%"
-    echo ServiceName=!ServiceName!>> "%configFile%"
 )
+
+echo [Settings]> "%configFile%"
+echo Port=!port!>> "%configFile%"
+echo ServiceName=!ServiceName!>> "%configFile%"
 
 set "ipPort=0.0.0.0:!port!"
 
@@ -81,7 +84,6 @@ rem ============================
 echo.
 echo Checking if certificate file exists: %certFile%
 
-set "certHash="
 if not exist "%certFile%" (
     echo [INFO] Certificate file not found. Proceeding to generate and import a new one...
 
@@ -132,26 +134,26 @@ if not exist "%certFile%" (
     "%OPENSSL_CMD%" pkcs12 -export -out smartcashlessserver.p12 -inkey smartcashlessserver.key -in smartcashlessserver.crt
 
     popd
-)
 
-:: === Get current cert thumbprint from .p12 ===
-echo [INFO] Retrieving thumbprint from certificate file...
-set "certHash="
-for /f "tokens=2 delims=:" %%h in ('certutil -dump "%certFile%" ^| findstr /i /c:"Cert Hash"') do (
-    set "line=%%h"
-    setlocal enabledelayedexpansion
-    set "certHash=!line: =!"
-    endlocal & set "certHash=!certHash!"
-    goto gotThumbprint
-)
+    :: === Get current cert thumbprint from .p12 ===
+    echo [INFO] Retrieving thumbprint from certificate file...
+    for /f "tokens=2 delims=:" %%h in ('certutil -dump "%certFile%" ^| findstr /i /c:"Cert Hash"') do (
+        set "line=%%h"
+        setlocal enabledelayedexpansion
+        set "certHash=!line: =!"
+        endlocal & set "certHash=!certHash!"
+        goto gotThumbprint
+    )
 
-:gotThumbprint
-if not defined certHash (
-    echo [ERROR] Failed to read certificate thumbprint from .p12
-    pause
-    exit /b 1
+    :gotThumbprint
+    if not defined certHash (
+        echo [ERROR] Failed to read certificate thumbprint from .p12
+        pause
+        exit /b 1
+    )
+    echo [INFO] Thumbprint read: %certHash%
+    echo Thumbprint=!certHash!>> "%configFile%"
 )
-echo [INFO] Thumbprint read: %certHash%
 
 :: === Check if cert is already installed ===
 set "certAlreadyInstalled=false"
