@@ -174,8 +174,10 @@ if "%sslBound%"=="false" (
 
 echo Adding firewall rule for port !port!...
 
-netsh advfirewall firewall delete rule name="Allow Port !port!" dir=in protocol=TCP localport=!port!
-netsh advfirewall firewall add rule name="Allow Port !port!" dir=in action=allow protocol=TCP localport=!port!
+netsh advfirewall firewall delete rule name="Allow !ServiceName! !port!" dir=in protocol=TCP localport=!port!
+netsh advfirewall firewall delete rule name="Allow !ServiceName! !port!" dir=out protocol=TCP localport=!port!
+netsh advfirewall firewall add rule name="Allow !ServiceName! !port!" dir=in action=allow protocol=TCP localport=!port!
+netsh advfirewall firewall add rule name="Allow !ServiceName! !port!" dir=out action=allow protocol=TCP localport=!port!
 
 echo Firewall rule added.
 
