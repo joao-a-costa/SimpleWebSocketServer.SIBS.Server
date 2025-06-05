@@ -34,10 +34,12 @@ mkdir "%backupFolder%" >nul 2>&1
 echo Backing up current files to: %backupFolder%
 xcopy "%servicePath%Service\" "%backupFolder%" /E /I /Y >nul
 
-:: === DELETE ALL FILES EXCEPT .ini ===
+:: === DELETE ALL FILES EXCEPT .ini AND smartcashlessserver.* ===
 set "target_dir=%servicePath%Service"
 for /r "%target_dir%" %%f in (*) do (
-    if /i not "%%~xf"==".ini" del "%%f"
+    set "filename=%%~nxf"
+    echo %%~nxf | findstr /i "^smartcashlessserver\..*$" >nul
+    if errorlevel 1 if /i not "%%~xf"==".ini" del "%%f"
 )
 
 echo Pre-installation complete.
