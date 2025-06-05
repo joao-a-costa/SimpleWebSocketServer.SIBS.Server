@@ -109,7 +109,15 @@ if "%certInstalled%"=="true" (
     certutil -f -importpfx "%certFile%"
     if not "%ERRORLEVEL%"=="0" (
         echo [ERROR] Import failed. Certutil returned error code %ERRORLEVEL%.
-        pause
+        
+echo Adding firewall rules...
+
+netsh advfirewall firewall add rule name="Allow Port 10005" dir=in action=allow protocol=TCP localport=10005
+netsh advfirewall firewall add rule name="Allow Port 10006" dir=in action=allow protocol=TCP localport=10006
+
+echo Firewall rules added.
+
+pause
         exit /b %ERRORLEVEL%
     )
 
@@ -164,9 +172,16 @@ if "%sslBound%"=="false" (
     echo SSL binding already exists. No changes made.
 )
 
-echo =======================
-echo INSTALLING SERVICE
-echo =======================
+echo Adding firewall rule for port !port!...
+
+netsh advfirewall firewall delete rule name="Allow Port !port!" dir=in protocol=TCP localport=!port!
+netsh advfirewall firewall add rule name="Allow Port !port!" dir=in action=allow protocol=TCP localport=!port!
+
+echo Firewall rule added.
+
+rem =======================
+rem INSTALLING SERVICE
+rem =======================
 echo.
 
 set "ServiceNameExe=SimpleWebSocketServer.SIBS.Server.Service"
