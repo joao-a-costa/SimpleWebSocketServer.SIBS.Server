@@ -492,7 +492,7 @@ namespace SimpleWebSocketServer.SIBS.Server
                 //Task.WhenAll(sendTasks).Wait();
 
             }
-            //SendMessageToFront((e.clientId, e.message)).Wait();
+            SendMessageToFront((e.clientId, e.message)).Wait();
         }
 
         private async Task RegisterFront((Guid clientId, string message) e)
@@ -547,7 +547,7 @@ namespace SimpleWebSocketServer.SIBS.Server
                 response.Terminal = linqTerminalToFrontReq.Terminal;
 
                 var match = _terminals.FirstOrDefault(kvp => kvp.Value == linqTerminalToFrontReq.Terminal);
-                if (match.Equals(default(KeyValuePair<Guid, int>)))
+                if (match.Equals(default(KeyValuePair<Guid, long>)))
                 {
                     response.Message = $"Terminal {linqTerminalToFrontReq.Terminal} not connected";
                 }
