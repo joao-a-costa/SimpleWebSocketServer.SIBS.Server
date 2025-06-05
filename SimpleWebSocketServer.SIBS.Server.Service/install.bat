@@ -86,7 +86,7 @@ set "ipPort=0.0.0.0:!port!"
 set "certAlreadyInstalled=false"
 echo [DEBUG] Checking installed certificate thumbprints...
 
-for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
+for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash(sha1)"') do (
     set "candidate=%%h"
     setlocal enabledelayedexpansion
     set "cleaned=!Cert Hash(sha1):=!"
