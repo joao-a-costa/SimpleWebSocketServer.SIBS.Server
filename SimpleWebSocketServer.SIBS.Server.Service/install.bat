@@ -151,14 +151,18 @@ if "%certHash%"=="" (
 
 rem === Check if cert is already installed ===
 set "certAlreadyInstalled=false"
+echo [DEBUG] Checking installed certificate thumbprints...
+
 for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
-    set "line=%%h"
+    set "candidate=%%h"
     setlocal enabledelayedexpansion
-    set "line=!line: =!"
-    if /i "!line!"=="!certHash!" (
+    set "cleaned=!candidate: =!"
+    echo [DEBUG] Found cert thumbprint: !cleaned!
+    if /i "!cleaned!"=="%certHash%" (
         endlocal
         set "certAlreadyInstalled=true"
-        goto skipImport
+        echo [DEBUG] Match found: !cleaned!
+        goto :afterCheck
     )
     endlocal
 )
