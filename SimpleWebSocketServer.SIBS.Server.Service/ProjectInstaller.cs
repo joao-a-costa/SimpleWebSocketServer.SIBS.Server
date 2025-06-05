@@ -26,8 +26,6 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
 
         private void SetupServiceName()
         {
-            System.Diagnostics.Debugger.Launch();
-
             Configuration config = ConfigurationManager.OpenExeConfiguration(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\" + AssemblyName + ".exe"
             );
