@@ -134,22 +134,26 @@ if not exist "%certFile%" (
     popd
 )
 
-rem === Get latest certificate thumbprint ===
-for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
+:: === Get current cert thumbprint from .p12 ===
+echo [INFO] Retrieving thumbprint from certificate file...
+set "certHash="
+for /f "tokens=2 delims=:" %%h in ('certutil -dump "%certFile%" ^| findstr /i /c:"Cert Hash"') do (
     set "line=%%h"
     setlocal enabledelayedexpansion
-    set "line=!line: =!"
-    endlocal
-    set "certHash=%%h"
+    set "certHash=!line: =!"
+    endlocal & set "certHash=!certHash!"
+    goto gotThumbprint
 )
 
-if "%certHash%"=="" (
-    echo [ERROR] Could not retrieve certificate thumbprint.
+:gotThumbprint
+if not defined certHash (
+    echo [ERROR] Failed to read certificate thumbprint from .p12
     pause
     exit /b 1
 )
+echo [INFO] Thumbprint read: %certHash%
 
-rem === Check if cert is already installed ===
+:: === Check if cert is already installed ===
 set "certAlreadyInstalled=false"
 echo [DEBUG] Checking installed certificate thumbprints...
 
@@ -158,18 +162,18 @@ for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Ha
     setlocal enabledelayedexpansion
     set "cleaned=!candidate: =!"
     echo [DEBUG] Found cert thumbprint: !cleaned!
-    if /i "!cleaned!"=="%certHash%" (
+    if /i "!cleaned!"=="!certHash!" (
         endlocal
         set "certAlreadyInstalled=true"
         echo [DEBUG] Match found: !cleaned!
-        goto :afterCheck
+        goto afterCheck
     )
     endlocal
 )
 
-:skipImport
+:afterCheck
 if "%certAlreadyInstalled%"=="true" (
-    echo [INFO] Certificate with thumbprint !certHash! is already installed. Skipping import.
+    echo [INFO] Certificate with thumbprint %certHash% is already installed. Skipping import.
 ) else (
     echo Importing certificate...
     certutil -f -importpfx "%certFile%"
@@ -179,8 +183,6 @@ if "%certAlreadyInstalled%"=="true" (
         exit /b %ERRORLEVEL%
     )
 )
-
-:hashFound
 
 rem =======================
 rem SSL CERTIFICATE BINDING
