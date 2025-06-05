@@ -89,7 +89,7 @@ if not exist "%certFile%" (
     where openssl >nul 2>&1
     if errorlevel 1 (
         set "searchDir=c:\Program Files\OpenSSL-Win64"
-	echo [DEBUG] OpenSSL fallback folder: !searchDir!
+        echo [DEBUG] OpenSSL fallback folder: !searchDir!
         echo [INFO] OpenSSL not found in PATH. Trying fallback: !searchDir!
         if exist "!searchDir!" (
             for /f "delims=" %%F in ('dir "!searchDir!" /s /b ^| findstr /i "bin\\openssl.exe"') do (
@@ -134,14 +134,6 @@ if not exist "%certFile%" (
     popd
 )
 
-echo Importing certificate...
-certutil -f -importpfx "%certFile%"
-if not "%ERRORLEVEL%"=="0" (
-    echo [ERROR] Import failed. Certutil returned error code %ERRORLEVEL%.
-    pause
-    exit /b %ERRORLEVEL%
-)
-
 rem === Get latest certificate thumbprint ===
 for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
     set "line=%%h"
@@ -155,6 +147,33 @@ if "%certHash%"=="" (
     echo [ERROR] Could not retrieve certificate thumbprint.
     pause
     exit /b 1
+)
+
+rem === Check if cert is already installed ===
+set "certAlreadyInstalled=false"
+for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
+    set "line=%%h"
+    setlocal enabledelayedexpansion
+    set "line=!line: =!"
+    if /i "!line!"=="!certHash!" (
+        endlocal
+        set "certAlreadyInstalled=true"
+        goto skipImport
+    )
+    endlocal
+)
+
+:skipImport
+if "%certAlreadyInstalled%"=="true" (
+    echo [INFO] Certificate with thumbprint !certHash! is already installed. Skipping import.
+) else (
+    echo Importing certificate...
+    certutil -f -importpfx "%certFile%"
+    if not "%ERRORLEVEL%"=="0" (
+        echo [ERROR] Import failed. Certutil returned error code %ERRORLEVEL%.
+        pause
+        exit /b %ERRORLEVEL%
+    )
 )
 
 :hashFound
