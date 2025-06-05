@@ -13,8 +13,8 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
         public const string _iniPortValue = "Port";
         public const string _iniServiceNameValue = "ServiceName";
         public const int _WebSocketServerDefaultPort = 10005;
+        public const string _WebSocketServerPrefix = "https://+:#PORT#/";
 
-        private const string _WebSocketServerPrefix = "https://+:#PORT#/";
         private const string _MessageEnterJSONCommand = "Enter 'q' to stop:";
         private const string _MessageErrorErrorOccurred = "Error occurred";
         private const string _MessagePressAnyKeyToExit = "Press any key to exit...";
@@ -62,7 +62,7 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
             try
             {
                 // Start the WebSocket server
-                server.Start(prefix);
+                server.Start();
                 System.Console.WriteLine(_MessageEnterJSONCommand);
                 System.Console.WriteLine("Type 'list' to see connected clients.");
 

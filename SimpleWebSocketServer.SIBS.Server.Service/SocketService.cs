@@ -10,9 +10,8 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
 {
     public class SocketService : ServiceBase
     {
-        private const string _WebSocketServerPrefix = "https://+:10005/";
-
         private WebSocketServerSibs _server;
+        private int port = Program._WebSocketServerDefaultPort;
 
         public bool IsStarted => _server.IsStarted;
         public ConcurrentDictionary<Guid, long> Terminals => _server.Terminals;
@@ -32,19 +31,18 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
             var iniFile = new IniFileController($"{Path.GetDirectoryName(config.FilePath)}\\{iniPath}");
 
             string serviceName = iniFile.Read(Program._iniSection, Program._iniServiceNameValue);
+            if (!int.TryParse(iniFile.Read(Program._iniSection, Program._iniPortValue), out port))
+                port = Program._WebSocketServerDefaultPort;
 
             string instanceNameComplete = string.IsNullOrEmpty(serviceName) ? AssemblyName : serviceName;
 
             ServiceName = instanceNameComplete;
         }
 
-        public void Start(string prefix)
+        public void Start()
         {
-            var iniFile = new IniFileController(Program._iniFile);
-            var port = int.TryParse(iniFile.Read(Program._iniSection, Program._iniPortValue), out int parsedPort) ? parsedPort : Program._WebSocketServerDefaultPort;
-
             // Define the WebSocket server prefix
-            string prefixFinal = _WebSocketServerPrefix.Replace($"#PORT#", port.ToString());
+            string prefixFinal = Program._WebSocketServerPrefix.Replace($"#PORT#", port.ToString());
 
             _server = new WebSocketServerSibs();
             _server.Start(prefixFinal);
@@ -52,7 +50,7 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
 
         protected override void OnStart(string[] args)
         {
-            Start(_WebSocketServerPrefix);
+            Start();
         }
 
         protected override void OnStop()
