@@ -8,8 +8,7 @@ set "defaultPort=10005"
 set "port="
 set "servicePath=%~dp0"
 set "configFile=%servicePath%Service\SimpleWebSocketServer.SIBS.Server.Service.ini"
-set "certFile=%servicePath%Service\certificate.p12"
-set "expectedThumbprint=f1abc6eb32ef727d3a6e63b26c0b13a4ca81a281"
+set "certFile=%servicePath%Service\smartcashlessserver.p12"
 set "appId={01234567-89AB-CDEF-0123-456789ABCDEF}"
 set "ServiceName="
 
@@ -49,7 +48,6 @@ if exist "%configFile%" (
         set "port=!checkPort!"
     )
 
-    rem === Check if port is in use regardless of input ===
     netstat -ano | findstr /r "TCP.*:!port! " >nul
     if not errorlevel 1 (
         echo Port !port! is already in use. Try another.
@@ -77,64 +75,86 @@ if exist "%configFile%" (
 
 set "ipPort=0.0.0.0:!port!"
 
-rem ===========================
-rem CHECK CERTIFICATE EXISTENCE
-rem ===========================
+rem ============================
+rem CHECK / IMPORT / GENERATE CERTIFICATE
+rem ============================
 echo.
-echo Checking for certificate with thumbprint: %expectedThumbprint%
-echo Import path: %certFile%
+echo Checking if certificate file exists: %certFile%
 
 set "certHash="
-set "certInstalled=false"
+if not exist "%certFile%" (
+    echo [INFO] Certificate file not found. Proceeding to generate and import a new one...
+
+    set "OPENSSL_CMD=openssl"
+    where openssl >nul 2>&1
+    if errorlevel 1 (
+        set "currentDrive=%CD:~0,2%"
+        set "searchDir=%currentDrive%\Program Files\OpenSSL-Win64"
+        echo [INFO] OpenSSL not found in PATH. Trying fallback: %searchDir%
+        if exist "%searchDir%" (
+            for /f "delims=" %%F in ('dir "%searchDir%" /s /b ^| findstr /i "bin\\openssl.exe"') do (
+                set "OPENSSL_CMD=%%F"
+                goto openssl_ready
+            )
+        )
+
+        echo [INFO] OpenSSL not found. Attempting to run installer...
+        if exist "%~dp0Win64OpenSSL_Light-3_5_0.exe" (
+            echo Running installer: Win64OpenSSL_Light-3_5_0.exe
+            start /wait "" "%~dp0Win64OpenSSL_Light-3_5_0.exe"
+        ) else (
+            echo [ERROR] Installer not found: %~dp0Win64OpenSSL_Light-3_5_0.exe
+            pause
+            exit /b 1
+        )
+
+        where openssl >nul 2>&1
+        if errorlevel 1 (
+            if exist "%searchDir%" (
+                for /f "delims=" %%F in ('dir "%searchDir%" /s /b ^| findstr /i "bin\\openssl.exe"') do (
+                    set "OPENSSL_CMD=%%F"
+                    goto openssl_ready
+                )
+            )
+            echo [ERROR] OpenSSL still not found after installation.
+            pause
+            exit /b 1
+        )
+    )
+    :openssl_ready
+    echo [INFO] OpenSSL path: %OPENSSL_CMD%
+
+    pushd "%servicePath%Service"
+
+    "%OPENSSL_CMD%" genpkey -algorithm RSA -out smartcashlessserver.key -aes256
+    "%OPENSSL_CMD%" req -new -key smartcashlessserver.key -out smartcashlessserver.csr
+    "%OPENSSL_CMD%" x509 -req -days 365 -in smartcashlessserver.csr -signkey smartcashlessserver.key -out smartcashlessserver.crt
+    "%OPENSSL_CMD%" pkcs12 -export -out smartcashlessserver.p12 -inkey smartcashlessserver.key -in smartcashlessserver.crt
+
+    popd
+)
+
+echo Importing certificate...
+certutil -f -importpfx "%certFile%"
+if not "%ERRORLEVEL%"=="0" (
+    echo [ERROR] Import failed. Certutil returned error code %ERRORLEVEL%.
+    pause
+    exit /b %ERRORLEVEL%
+)
+
+rem === Get latest certificate thumbprint ===
 for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
     set "line=%%h"
     setlocal enabledelayedexpansion
     set "line=!line: =!"
-    if /i "!line!"=="%expectedThumbprint%" (
-        endlocal
-        set "certInstalled=true"
-        set "certHash=%expectedThumbprint%"
-        goto certCheckDone
-    )
     endlocal
+    set "certHash=%%h"
 )
 
-:certCheckDone
-if "%certInstalled%"=="true" (
-    echo [INFO] Certificate already installed. Skipping import.
-) else (
-    if exist "%certFile%" (
-        echo [INFO] Certificate not found. Proceeding with import...
-
-        echo Importing certificate...
-        certutil -f -importpfx "%certFile%"
-        if not "%ERRORLEVEL%"=="0" (
-            echo [ERROR] Import failed. Certutil returned error code %ERRORLEVEL%.
-            pause
-            exit /b %ERRORLEVEL%
-        )
-
-        for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
-            set "line=%%h"
-            setlocal enabledelayedexpansion
-            set "line=!line: =!"
-            if /i "!line!"=="%expectedThumbprint%" (
-                endlocal
-                set "certHash=%expectedThumbprint%"
-                goto hashFound
-            )
-            endlocal
-        )
-
-        echo [ERROR] Imported certificate not found by thumbprint.
-        pause
-        exit /b 1
-    ) else (
-        echo [ERROR] Certificate file not found at: %certFile%
-        echo Please ensure the certificate exists and try again.
-        pause
-        exit /b 1
-    )
+if "%certHash%"=="" (
+    echo [ERROR] Could not retrieve certificate thumbprint.
+    pause
+    exit /b 1
 )
 
 :hashFound
@@ -164,7 +184,7 @@ if "%sslBound%"=="false" (
     echo Removing any existing SSL binding for port !ipPort!...
     netsh http delete sslcert ipport=!ipPort! >nul 2>&1
     echo Adding new SSL binding...
-    netsh http add sslcert ipport=!ipPort! certhash=%certHash% appid=%appId%
+    netsh http add sslcert ipport=!ipPort! certhash=!certHash! appid=%appId%
     echo.
     echo SSL binding successfully added
 ) else (
