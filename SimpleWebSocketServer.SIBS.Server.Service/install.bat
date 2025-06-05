@@ -89,7 +89,7 @@ echo [DEBUG] Checking installed certificate thumbprints...
 for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
     set "candidate=%%h"
     setlocal enabledelayedexpansion
-    set "cleaned=!candidate: =!"
+    set "cleaned=!Cert Hash(sha1):=!"
     echo [DEBUG] Found cert thumbprint: !cleaned!
     if /i "!cleaned!"=="!certHash!" (
         endlocal
