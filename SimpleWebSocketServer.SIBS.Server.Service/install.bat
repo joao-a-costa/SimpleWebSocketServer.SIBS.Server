@@ -32,24 +32,24 @@ if exist "%configFile%" (
     if "!userPort!"=="" (
         set "port=%defaultPort%"
         echo No input provided. Using default port: %defaultPort%
-        goto askServiceName
+    ) else (
+        set /a checkPort=!userPort!+0 >nul 2>nul
+        if errorlevel 1 (
+            echo Invalid input: not a number. Try again.
+            goto askPort
+        )
+        if !checkPort! LSS 1 (
+            echo Invalid port: must be >= 1. Try again.
+            goto askPort
+        )
+        if !checkPort! GTR 65535 (
+            echo Invalid port: must be <= 65535. Try again.
+            goto askPort
+        )
+        set "port=!checkPort!"
     )
 
-    set /a checkPort=!userPort!+0 >nul 2>nul
-    if errorlevel 1 (
-        echo Invalid input: not a number. Try again.
-        goto askPort
-    )
-    if !checkPort! LSS 1 (
-        echo Invalid port: must be >= 1. Try again.
-        goto askPort
-    )
-    if !checkPort! GTR 65535 (
-        echo Invalid port: must be <= 65535. Try again.
-        goto askPort
-    )
-    set "port=!checkPort!"
-
+    rem === Check if port is in use regardless of input ===
     netstat -ano | findstr /r "TCP.*:!port! " >nul
     if not errorlevel 1 (
         echo Port !port! is already in use. Try another.
@@ -57,10 +57,10 @@ if exist "%configFile%" (
     )
 
     echo Valid and available port selected: !port!
-
-set "defaultServiceNameBase=SimpleWebSocketServer SIBS Server Service"
+    goto askServiceName
 
 :askServiceName
+    set "defaultServiceNameBase=SimpleWebSocketServer SIBS Server Service"
     set "defaultServiceName=!defaultServiceNameBase! !port!"
     set /p "userServiceName=Enter service name (default: !defaultServiceName!): "
     if "!userServiceName!"=="" (
