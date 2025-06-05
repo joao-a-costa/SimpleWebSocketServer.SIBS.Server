@@ -24,10 +24,14 @@ echo Port loaded from config: !port!
 :: === STOP SERVICE IF RUNNING ===
 net stop "!serviceName!" >nul 2>&1
 
-:: === CREATE BACKUP FOLDER (uses date independent of system locale) ===
+:: === CREATE BACKUP FOLDER (using regional date format) ===
 cd /d "%servicePath%"
-for /f %%i in ('wmic os get LocalDateTime ^| find "."') do set dt=%%i
-set "backupFolder=%servicePath%backup%dt:~6,2%%dt:~4,2%%dt:~0,4%"
+for /f "tokens=1-3 delims=/.-" %%a in ("%date%") do (
+    set "dd=%%a"
+    set "mm=%%b"
+    set "yyyy=%%c"
+)
+set "backupFolder=%servicePath%backup!dd!!mm!!yyyy%!"
 
 mkdir "%backupFolder%" >nul 2>&1
 
