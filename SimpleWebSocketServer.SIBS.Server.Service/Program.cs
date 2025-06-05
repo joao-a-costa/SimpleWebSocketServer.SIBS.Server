@@ -8,15 +8,16 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
     {
         #region "Constants"
 
+        public const string _iniFile = "config.ini";
+        public const string _iniSection = "Settings";
+        public const string _iniPortValue = "Port";
+        public const string _iniServiceNameValue = "ServiceName";
+
         private const int _WebSocketServerDefaultPort = 10005;
         private const string _WebSocketServerPrefix = "https://+:#PORT#/";
         private const string _MessageEnterJSONCommand = "Enter 'q' to stop:";
         private const string _MessageErrorErrorOccurred = "Error occurred";
         private const string _MessagePressAnyKeyToExit = "Press any key to exit...";
-
-        private const string _iniFile = "config.ini";
-        private const string _iniSection = "Settings";
-        private const string _iniValue = "Port";
 
         #endregion
 
@@ -50,7 +51,7 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
         private static void RunSimulation()
         {
             var iniFile = new IniFileController(_iniFile);
-            var port = int.TryParse(iniFile.Read(_iniSection, _iniValue), out int parsedPort) ? parsedPort : _WebSocketServerDefaultPort;
+            var port = int.TryParse(iniFile.Read(_iniSection, _iniPortValue), out int parsedPort) ? parsedPort : _WebSocketServerDefaultPort;
 
             // Define the WebSocket server prefix
             string prefix = _WebSocketServerPrefix.Replace($"#PORT#", port.ToString());

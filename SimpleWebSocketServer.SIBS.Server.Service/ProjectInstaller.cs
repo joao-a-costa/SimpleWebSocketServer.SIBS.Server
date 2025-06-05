@@ -1,13 +1,16 @@
 ﻿using System.Reflection;
 using System.ComponentModel;
 using System.Configuration.Install;
+using SimpleWebSocketServer.SIBS.Server.Service.Controllers;
+using System.IO;
+using System.Configuration;
 
 namespace SimpleWebSocketServer.SIBS.Server.Service
 {
     [RunInstaller(true)]
     public partial class ProjectInstaller : Installer
     {
-        public string AssemblyName { get; set; } = $"SmartCASLESS - Server";
+        public string AssemblyName { get; set; } = Assembly.GetExecutingAssembly().GetName().Name;
 
         public ProjectInstaller()
         {
@@ -23,7 +26,19 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
 
         private void SetupServiceName()
         {
-            string instanceNameComplete = AssemblyName;
+            System.Diagnostics.Debugger.Launch();
+
+            Configuration config = ConfigurationManager.OpenExeConfiguration(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\" + AssemblyName + ".exe"
+            );
+
+            var iniPath = Path.GetFileNameWithoutExtension(
+                Path.GetFileNameWithoutExtension(config.FilePath));
+            var iniFile = new IniFileController($"{Path.GetDirectoryName(config.FilePath)}\\{iniPath}");
+
+            string serviceName = iniFile.Read(Program._iniSection, Program._iniServiceNameValue);
+
+            string instanceNameComplete = string.IsNullOrEmpty(serviceName) ? AssemblyName : serviceName;
 
             serviceInstaller1.ServiceName = instanceNameComplete;
             serviceInstaller1.DisplayName = instanceNameComplete;
