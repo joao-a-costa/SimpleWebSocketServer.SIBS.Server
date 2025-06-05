@@ -24,20 +24,11 @@ echo Port loaded from config: !port!
 :: === STOP SERVICE IF RUNNING ===
 net stop "!serviceName!" >nul 2>&1
 
-:: === GET CURRENT DATE (DDMMYYYY) ===
-for /f "tokens=1-3 delims=/" %%a in ("%date%") do (
-    set "day=%%a"
-    set "month=%%b"
-    set "year=%%c"
-)
-
-:: Remove leading zeros (optional, based on regional format)
-set "day=%day:~0,2%"
-set "month=%month:~0,2%"
-
-:: === CREATE BACKUP FOLDER ===
+:: === CREATE BACKUP FOLDER (uses date independent of system locale) ===
 cd /d "%servicePath%"
-set "backupFolder=%servicePath%backup%day%%month%%year%"
+for /f %%i in ('wmic os get LocalDateTime ^| find "."') do set dt=%%i
+set "backupFolder=%servicePath%backup%dt:~6,2%%dt:~4,2%%dt:~0,4%"
+
 mkdir "%backupFolder%" >nul 2>&1
 
 echo Backing up current files to: %backupFolder%
