@@ -70,26 +70,99 @@ if exist "%configFile%" (
     ) else (
         set "ServiceName=!userServiceName!"
     )
-
-    rem Hardcoded thumbprint value
-    set "certHash=f1abc6eb32ef727d3a6e63b26c0b13a4ca81a281"
 )
 
 echo [Settings]> "%configFile%"
 echo Port=!port!>> "%configFile%"
 echo ServiceName=!ServiceName!>> "%configFile%"
-echo Thumbprint=!certHash!>> "%configFile%"
 
 set "ipPort=0.0.0.0:!port!"
+
+rem ============================
+rem CHECK / IMPORT / GENERATE CERTIFICATE
+rem ============================
+echo.
+echo Checking if certificate file exists: %certFile%
+
+if not exist "%certFile%" (
+    echo [INFO] Certificate file not found. Proceeding to generate and import a new one...
+
+    set "OPENSSL_CMD=openssl"
+    where openssl >nul 2>&1
+    if errorlevel 1 (
+        set "searchDir=c:\Program Files\OpenSSL-Win64"
+        echo [DEBUG] OpenSSL fallback folder: !searchDir!
+        echo [INFO] OpenSSL not found in PATH. Trying fallback: !searchDir!
+        if exist "!searchDir!" (
+            for /f "delims=" %%F in ('dir "!searchDir!" /s /b ^| findstr /i "bin\\openssl.exe"') do (
+                set "OPENSSL_CMD=%%F"
+                goto openssl_ready
+            )
+        )
+
+        echo [INFO] OpenSSL not found. Attempting to run installer...
+        if exist "%~dp0Service\Win64OpenSSL_Light-3_5_0.exe" (
+            echo Running installer: Win64OpenSSL_Light-3_5_0.exe
+            start /wait "" "%~dp0Service\Win64OpenSSL_Light-3_5_0.exe"
+        ) else (
+            echo [ERROR] Installer not found: %~dp0Service\Win64OpenSSL_Light-3_5_0.exe
+            pause
+            exit /b 1
+        )
+
+        where openssl >nul 2>&1
+        if errorlevel 1 (
+            if exist "!searchDir!" (
+                for /f "delims=" %%F in ('dir "!searchDir!" /s /b ^| findstr /i "bin\\openssl.exe"') do (
+                    set "OPENSSL_CMD=%%F"
+                    goto openssl_ready
+                )
+            )
+            echo [ERROR] OpenSSL still not found after installation "!searchDir!"
+            pause
+            exit /b 1
+        )
+    )
+    :openssl_ready
+    echo [INFO] OpenSSL path: %OPENSSL_CMD%
+
+    pushd "%servicePath%Service"
+
+    "%OPENSSL_CMD%" genpkey -algorithm RSA -out smartcashlessserver.key -aes256
+    "%OPENSSL_CMD%" req -new -key smartcashlessserver.key -out smartcashlessserver.csr
+    "%OPENSSL_CMD%" x509 -req -days 365 -in smartcashlessserver.csr -signkey smartcashlessserver.key -out smartcashlessserver.crt
+    "%OPENSSL_CMD%" pkcs12 -export -out smartcashlessserver.p12 -inkey smartcashlessserver.key -in smartcashlessserver.crt
+
+    popd
+
+    :: === Get current cert thumbprint from .p12 ===
+    echo [INFO] Retrieving thumbprint from certificate file...
+    for /f "tokens=2 delims=:" %%h in ('certutil -dump "%certFile%" ^| findstr /i /c:"Cert Hash"') do (
+        set "line=%%h"
+        setlocal enabledelayedexpansion
+        set "certHash=!line: =!"
+        endlocal & set "certHash=!certHash!"
+        goto gotThumbprint
+    )
+
+    :gotThumbprint
+    if not defined certHash (
+        echo [ERROR] Failed to read certificate thumbprint from .p12
+        pause
+        exit /b 1
+    )
+    echo [INFO] Thumbprint read: %certHash%
+    echo Thumbprint=!certHash!>> "%configFile%"
+)
 
 :: === Check if cert is already installed ===
 set "certAlreadyInstalled=false"
 echo [DEBUG] Checking installed certificate thumbprints...
 
-for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash(sha1)"') do (
+for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
     set "candidate=%%h"
     setlocal enabledelayedexpansion
-    set "cleaned=!Cert Hash(sha1):=!"
+    set "cleaned=!candidate: =!"
     echo [DEBUG] Found cert thumbprint: !cleaned!
     if /i "!cleaned!"=="!certHash!" (
         endlocal
@@ -135,7 +208,7 @@ for /f "tokens=1,* delims=:" %%A in ('netsh http show sslcert ^| findstr /R /C:"
 
 :sslCheckDone
 if "%sslBound%"=="false" (
-    echo Removing any existing SSL binding for port !ipPort!... 
+    echo Removing any existing SSL binding for port !ipPort!...
     netsh http delete sslcert ipport=!ipPort! >nul 2>&1
     echo Adding new SSL binding...
     netsh http add sslcert ipport=!ipPort! certhash=!certHash! appid=%appId%
