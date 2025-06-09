@@ -9,6 +9,7 @@ set "port="
 set "servicePath=%~dp0"
 set "configFile=%servicePath%Service\SimpleWebSocketServer.SIBS.Server.Service.ini"
 set "certFile=%servicePath%Service\smartcashlessserver.p12"
+set "certFileName=smartcashlessserver"
 set "appId={01234567-89AB-CDEF-0123-456789ABCDEF}"
 set "ServiceName="
 set "certHash="
@@ -128,104 +129,62 @@ if not exist "%certFile%" (
 
     pushd "%servicePath%Service"
 
-    "%OPENSSL_CMD%" genpkey -algorithm RSA -out smartcashlessserver.key -aes256
-    "%OPENSSL_CMD%" req -new -key smartcashlessserver.key -out smartcashlessserver.csr
-    "%OPENSSL_CMD%" x509 -req -days 365 -in smartcashlessserver.csr -signkey smartcashlessserver.key -out smartcashlessserver.crt
-    "%OPENSSL_CMD%" pkcs12 -export -out smartcashlessserver.p12 -inkey smartcashlessserver.key -in smartcashlessserver.crt
+    "%OPENSSL_CMD%" genpkey -algorithm RSA -out %certFileName%.key -aes256
+    "%OPENSSL_CMD%" req -new -key %certFileName%.key -out %certFileName%.csr
+    "%OPENSSL_CMD%" x509 -req -days 365 -in %certFileName%.csr -signkey %certFileName%.key -out %certFileName%.crt
+    "%OPENSSL_CMD%" pkcs12 -export -out %certFileName%.p12 -inkey %certFileName%.key -in %certFileName%.crt
 
     popd
 
     :: === Get current cert thumbprint from .p12 ===
     echo [INFO] Retrieving thumbprint from certificate file...
-    for /f "tokens=2 delims=:" %%h in ('certutil -dump "%certFile%" ^| findstr /i /c:"Cert Hash"') do (
-        set "line=%%h"
-        setlocal enabledelayedexpansion
-        set "certHash=!line: =!"
-        endlocal & set "certHash=!certHash!"
-        goto gotThumbprint
+
+    pushd "%servicePath%Service"
+    "%OPENSSL_CMD%" pkcs12 -in "%certFileName%.p12" -nokeys -nodes | "%OPENSSL_CMD%" x509 -noout -fingerprint -sha1 > tmp_fp.txt
+
+    REM Ler linha do ficheiro e extrair fingerprint
+    for /f "tokens=2 delims==" %%A in (tmp_fp.txt) do (
+        set "certHash=%%A"
     )
 
-    :gotThumbprint
-    if not defined certHash (
-        echo [ERROR] Failed to read certificate thumbprint from .p12
-        pause
-        exit /b 1
-    )
+    REM Remover os dois-pontos do fingerprint
+    call set "certHash=%%certHash::=%%"
+
     echo [INFO] Thumbprint read: %certHash%
-    echo Thumbprint=!certHash!>> "%configFile%"
-)
+    echo Thumbprint=%certHash%>> "%configFile%"
 
-:: === Check if cert is already installed ===
-set "certAlreadyInstalled=false"
-echo [DEBUG] Checking installed certificate thumbprints...
+    REM Limpar ficheiro temporário
+    del tmp_fp.txt >nul 2>&1
+    popd
 
-for /f "tokens=2 delims=:" %%h in ('certutil -store My ^| findstr /i /c:"Cert Hash"') do (
-    set "candidate=%%h"
-    setlocal enabledelayedexpansion
-    set "cleaned=!candidate: =!"
-    echo [DEBUG] Found cert thumbprint: !cleaned!
-    if /i "!cleaned!"=="!certHash!" (
-        endlocal
-        set "certAlreadyInstalled=true"
-        echo [DEBUG] Match found: !cleaned!
-        goto afterCheck
-    )
-    endlocal
-)
-
-:afterCheck
-if "%certAlreadyInstalled%"=="true" (
-    echo [INFO] Certificate with thumbprint %certHash% is already installed. Skipping import.
-) else (
     echo Importing certificate...
     certutil -f -importpfx "%certFile%"
-    if not "%ERRORLEVEL%"=="0" (
-        echo [ERROR] Import failed. Certutil returned error code %ERRORLEVEL%.
-        pause
-        exit /b %ERRORLEVEL%
-    )
-)
 
-rem =======================
-rem SSL CERTIFICATE BINDING
-rem =======================
-echo.
-echo Checking if port !ipPort! is already bound to an SSL certificate...
-set "sslBound=false"
-for /f "tokens=1,* delims=:" %%A in ('netsh http show sslcert ^| findstr /R /C:"IP:port"') do (
-    set "key=%%A"
-    set "value=%%B"
-    setlocal enabledelayedexpansion
-    set "value=!value: =!"
-    if /i "!value!"=="port:!ipPort!" (
-        echo [INFO] Port !ipPort! is already bound to an SSL certificate. Skipping binding.
-        endlocal
-        set "sslBound=true"
-        goto sslCheckDone
-    )
-    endlocal
-)
+    rem =======================
+    rem SSL CERTIFICATE BINDING
+    rem =======================
+    echo.
 
-:sslCheckDone
-if "%sslBound%"=="false" (
     echo Removing any existing SSL binding for port !ipPort!...
+    echo netsh http delete sslcert ipport=!ipPort!
     netsh http delete sslcert ipport=!ipPort! >nul 2>&1
+
     echo Adding new SSL binding...
+    echo netsh http add sslcert ipport=!ipPort! certhash=!certHash! appid=%appId%
     netsh http add sslcert ipport=!ipPort! certhash=!certHash! appid=%appId%
+
     echo.
     echo SSL binding successfully added
-) else (
-    echo SSL binding already exists. No changes made.
+
+    echo Adding firewall rule for port !port!...
+
+    netsh advfirewall firewall delete rule name="Allow !ServiceName! !port!" dir=in protocol=TCP localport=!port!
+    netsh advfirewall firewall delete rule name="Allow !ServiceName! !port!" dir=out protocol=TCP localport=!port!
+    netsh advfirewall firewall add rule name="Allow !ServiceName! !port!" dir=in action=allow protocol=TCP localport=!port!
+    netsh advfirewall firewall add rule name="Allow !ServiceName! !port!" dir=out action=allow protocol=TCP localport=!port!
+
+    echo Firewall rule added.
 )
-
-echo Adding firewall rule for port !port!...
-
-netsh advfirewall firewall delete rule name="Allow !ServiceName! !port!" dir=in protocol=TCP localport=!port!
-netsh advfirewall firewall delete rule name="Allow !ServiceName! !port!" dir=out protocol=TCP localport=!port!
-netsh advfirewall firewall add rule name="Allow !ServiceName! !port!" dir=in action=allow protocol=TCP localport=!port!
-netsh advfirewall firewall add rule name="Allow !ServiceName! !port!" dir=out action=allow protocol=TCP localport=!port!
-
-echo Firewall rule added.
 
 rem =======================
 rem INSTALLING SERVICE
