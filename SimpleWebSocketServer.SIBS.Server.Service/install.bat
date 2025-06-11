@@ -129,7 +129,7 @@ if not exist "%certFile%" (
 
     pushd "%servicePath%Service"
 
-    "%OPENSSL_CMD%" genpkey -algorithm RSA -out %certFileName%.key -aes256
+    "%OPENSSL_CMD%" genpkey -algorithm RSA csr -out %certFileName%.key -aes256
     "%OPENSSL_CMD%" req -new -key %certFileName%.key -out %certFileName%.csr
     "%OPENSSL_CMD%" x509 -req -days 365 -in %certFileName%.csr -signkey %certFileName%.key -out %certFileName%.crt
     "%OPENSSL_CMD%" pkcs12 -export -out %certFileName%.p12 -inkey %certFileName%.key -in %certFileName%.crt

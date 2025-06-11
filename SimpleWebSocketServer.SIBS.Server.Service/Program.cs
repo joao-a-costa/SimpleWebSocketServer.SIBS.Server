@@ -12,7 +12,7 @@ namespace SimpleWebSocketServer.SIBS.Server.Service
         public const string _iniSection = "Settings";
         public const string _iniPortValue = "Port";
         public const string _iniServiceNameValue = "ServiceName";
-        public const int _WebSocketServerDefaultPort = 10006;
+        public const int _WebSocketServerDefaultPort = 10005;
         public const string _WebSocketServerPrefix = "https://+:#PORT#/";
 
         private const string _MessageEnterJSONCommand = "Enter 'q' to stop:";
