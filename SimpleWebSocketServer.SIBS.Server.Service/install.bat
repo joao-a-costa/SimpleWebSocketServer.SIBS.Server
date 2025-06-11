@@ -129,7 +129,7 @@ if not exist "%certFile%" (
 
     pushd "%servicePath%Service"
 
-    "%OPENSSL_CMD%" genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 csr -out %certFileName%.key -aes256
+    "%OPENSSL_CMD%" genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out smartcashless.key -aes-256-cbc
     "%OPENSSL_CMD%" req -new -key %certFileName%.key -out %certFileName%.csr -subj "/C=PT/ST=Lisbon/L=Lisbon/O=Smartdigit/OU=Smartdigit/CN=SmartCASHLESS"
     "%OPENSSL_CMD%" x509 -req -days 365 -in %certFileName%.csr -signkey %certFileName%.key -out %certFileName%.crt
     "%OPENSSL_CMD%" pkcs12 -export -out %certFileName%.p12 -inkey %certFileName%.key -in %certFileName%.crt
